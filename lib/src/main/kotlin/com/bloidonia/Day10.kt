@@ -163,26 +163,18 @@ private fun addx(x: Int) = sequence {
     yield(x)
 }
 
-private fun parse(line: String): Sequence<Int> {
-    return line.split(" ").let { parts ->
-        when (parts[0]) {
-            "noop" -> noop()
-            "addx" -> addx(parts[1].toInt())
-            else -> throw IllegalArgumentException("Unknown op: $parts[0]")
-        }
+private fun parse(line: String) = line.split(" ").let { parts ->
+    when (parts[0]) {
+        "noop" -> noop()
+        "addx" -> addx(parts[1].toInt())
+        else -> throw IllegalArgumentException("Unknown op: $parts[0]")
     }
 }
 
 private fun seq(input: String) = input.lineSequence().flatMap(::parse)
 
-private fun part1(input: String, vararg indices: Int): Int {
-    val numbers = seq(input)
-    return indices.map {
-        val x = numbers.take(it - 1).sum() + 1
-        val ret = it * x
-        println("$it: $x: $ret")
-        ret
-    }.sum()
+private fun part1(input: String, vararg indices: Int) = seq(input).let { numbers ->
+    indices.sumOf { it * (numbers.take(it - 1).sum() + 1) }
 }
 
 private fun crt(input: String) {
