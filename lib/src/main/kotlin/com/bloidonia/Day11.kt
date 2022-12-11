@@ -1,5 +1,7 @@
 package com.bloidonia
 
+import kotlin.text.Typography.times
+
 private val input = """
     Monkey 0:
       Starting items: 79, 98
@@ -30,23 +32,22 @@ private val input = """
         If false: throw to monkey 1
 """.trimIndent()
 
-data class Monkey(val items: MutableList<Long>, val op: (Long) -> Long, val choice: (Long) -> Int, val part2: Long) {
+data class Monkey(val items: MutableList<Long>, val op: (Long) -> Long, val choice: (Long) -> Int, val divisor: Long) {
 
     var inspected: Long = 0L;
 
-    private fun bored(value: Long, part2: Boolean, product: Long): Long = if (part2) {
-        value % product
+    private fun bored(value: Long, part2: Boolean, gcd: Long): Long = if (part2) {
+        value % gcd
     } else value.div(3)
 
-    private fun throwTo(monkey: Monkey, part2: Boolean, product: Long) {
-        val item = items.removeAt(0)
-        monkey.items.add(bored(op(item), part2, product))
+    private fun throwTo(monkey: Monkey, part2: Boolean, gcd: Long) = items.removeAt(0).apply {
+        monkey.items.add(bored(op(this), part2, gcd))
     }
 
-    fun turn(monkeys: List<Monkey>, part2: Boolean, product: Long) {
+    fun turn(monkeys: List<Monkey>, part2: Boolean, gcd: Long) {
         while (items.isNotEmpty()) {
             inspected++;
-            throwTo(monkeys[choice(bored(op(items[0]), part2, product))], part2, product)
+            throwTo(monkeys[choice(bored(op(items[0]), part2, gcd))], part2, gcd)
         }
     }
 
@@ -67,14 +68,14 @@ private fun parseMonkey(input: String): Monkey {
             }
         }
     }
-    val part2 = lines[3].split("by")[1].trim().toLong()
+    val divisor = lines[3].split("by")[1].trim().toLong()
     val choice = { x: Long ->
-        if (x % part2 == 0L)
+        if (x % divisor == 0L)
             lines[4].split("monkey")[1].trim().toInt()
         else
             lines[5].split("monkey")[1].trim().toInt()
     }
-    return Monkey(items, op, choice, part2)
+    return Monkey(items, op, choice, divisor)
 }
 
 private fun parse(input: String) = input.split("\n\n").map(::parseMonkey)
@@ -82,8 +83,8 @@ private fun parse(input: String) = input.split("\n\n").map(::parseMonkey)
 private fun round(monkeys: List<Monkey>, part2: Boolean, product: Long) = monkeys.apply { forEach { m -> m.turn(monkeys, part2, product) } }
 
 private fun run(monkeys: List<Monkey>, rounds: Int, part2: Boolean): Long {
-    val product = monkeys.map { it.part2 }.reduce(Long::times)
-    (1..rounds).forEach { round(monkeys, part2, product) }
+    val gcd = monkeys.map(Monkey::divisor).distinct().reduce(Long::times)
+    (1..rounds).forEach { round(monkeys, part2, gcd) }
     return monkeys.map { it.inspected }.sortedByDescending { it }.take(2).reduce(Long::times)
 }
 
