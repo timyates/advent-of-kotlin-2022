@@ -1,7 +1,5 @@
 package com.bloidonia
 
-import org.checkerframework.checker.units.qual.g
-
 private val input = """
     Sabqponm
     abcryxxl
@@ -17,14 +15,21 @@ private fun parseLine(line: String) = line.map(::lookup)
 private fun parse(input: String) = input.lines().map { parseLine(it) }
 val POISON = -1 to -1
 
-private fun walk(map: List<List<Int>>, w: Int, h: Int, s: Pair<Int, Int>, e: Pair<Int, Int>): Int {
+private class Map(val input: String) {
+    val map = parse(input)
+    val w = map[0].size
+    val h = map.size
+    val xy = { i: Int -> i % w to i / w }
+}
+
+private fun walk(map: Map, s: Pair<Int, Int>, e: Pair<Int, Int>): Int {
     val possibles = { seen: Set<Pair<Int, Int>>, path: List<Pair<Int, Int>> ->
         val p = path.last()
         val (x, y) = p
-        ((if (x > 0 && map[y][x - 1] <= map[y][x] + 1 && !seen.contains(x - 1 to y)) listOf(x - 1 to y) else listOf()) +
-                (if (x < w - 1 && map[y][x + 1] <= map[y][x] + 1 && !seen.contains(x + 1 to y)) listOf(x + 1 to y) else listOf()) +
-                (if (y > 0 && map[y - 1][x] <= map[y][x] + 1 && !seen.contains(x to y - 1)) listOf(x to y - 1) else listOf()) +
-                (if (y < h - 1 && map[y + 1][x] <= map[y][x] + 1 && !seen.contains(x to y + 1)) listOf(x to y + 1) else listOf()))
+        ((if (x > 0 && map.map[y][x - 1] <= map.map[y][x] + 1 && !seen.contains(x - 1 to y)) listOf(x - 1 to y) else listOf()) +
+                (if (x < map.w - 1 && map.map[y][x + 1] <= map.map[y][x] + 1 && !seen.contains(x + 1 to y)) listOf(x + 1 to y) else listOf()) +
+                (if (y > 0 && map.map[y - 1][x] <= map.map[y][x] + 1 && !seen.contains(x to y - 1)) listOf(x to y - 1) else listOf()) +
+                (if (y < map.h - 1 && map.map[y + 1][x] <= map.map[y][x] + 1 && !seen.contains(x to y + 1)) listOf(x to y + 1) else listOf()))
             .ifEmpty { listOf(POISON) }
     }
     var paths = listOf(listOf(s))
@@ -46,27 +51,21 @@ private fun walk(map: List<List<Int>>, w: Int, h: Int, s: Pair<Int, Int>, e: Pai
 }
 
 private fun part1(input: String) {
-    val map = parse(input)
-    val w = map[0].size
-    val h = map.size
-    val xy = { i: Int -> i % w to i / w }
+    val map = Map(input)
     val (s, e) = input.lines().joinToString("").let {
-        xy(it.indexOf('S')) to xy(it.indexOf('E'))
+        map.xy(it.indexOf('S')) to map.xy(it.indexOf('E'))
     }
-    println(walk(map, w, h, s, e))
+    println(walk(map, s, e))
 }
 
 private fun part2(input: String) {
-    val map = parse(input)
-    val w = map[0].size
-    val h = map.size
-    val xy = { i: Int -> i % w to i / w }
+    val map = Map(input)
     val res = input.lines().joinToString("").let {
-        val e = xy(it.indexOf('E'))
+        val e = map.xy(it.indexOf('E'))
         it.withIndex()
             .filter { it.value == 'a' || it.value == 'S' }
-            .map { xy(it.index) to e }
-            .minOf { (s, e) -> walk(map, w, h, s, e) }
+            .map { map.xy(it.index) to e }
+            .minOf { (s, e) -> walk(map, s, e) }
     }
     println(res)
 }
