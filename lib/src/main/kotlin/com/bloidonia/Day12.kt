@@ -8,18 +8,18 @@ private val input = """
     abdefghi
 """.trimIndent()
 
-private val alphabet = "abcdefghijklmnopqrstuvwxyz"
+private const val ALPHABET = "abcdefghijklmnopqrstuvwxyz"
 
-private fun lookup(c: Char) = if (c == 'S') 0 else if (c == 'E') 25 else alphabet.indexOf(c)
+private fun lookup(c: Char) = if (c == 'S') 0 else if (c == 'E') 25 else ALPHABET.indexOf(c)
 private fun parseLine(line: String) = line.map(::lookup)
 private fun parse(input: String) = input.lines().map { parseLine(it) }
-val POISON = -1 to -1
+private val POISON = -1 to -1
 
-private class Map(val input: String) {
+private class Map(input: String) {
     val map = parse(input)
     val w = map[0].size
     val h = map.size
-    val xy = { i: Int -> i % w to i / w }
+    fun xy(i: Int) = i % w to i / w
 }
 
 private fun walk(map: Map, s: Pair<Int, Int>, e: Pair<Int, Int>): Int {
@@ -63,8 +63,8 @@ private fun part2(input: String) {
     val res = input.lines().joinToString("").let {
         val e = map.xy(it.indexOf('E'))
         it.withIndex()
-            .filter { it.value == 'a' || it.value == 'S' }
-            .map { map.xy(it.index) to e }
+            .filter { c -> c.value == 'a' || c.value == 'S' }
+            .map { c -> map.xy(c.index) to e }
             .minOf { (s, e) -> walk(map, s, e) }
     }
     println(res)
