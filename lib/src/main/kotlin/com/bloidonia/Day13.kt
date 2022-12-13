@@ -44,7 +44,7 @@ private fun parseElement(input: String): Element {
         if (input[idx] == '[') {
             val array = Element.Array(mutableListOf())
             (current as Element.Array).elements.add(array)
-            stack.add(0, current)
+            stack.add(current)
             current = array
             idx++
         } else if (input[idx] == ']') {
