@@ -1,5 +1,6 @@
 package com.bloidonia
 
+import kotlin.math.sign
 
 private val input = """
     498,4 -> 498,6 -> 496,6
@@ -7,25 +8,20 @@ private val input = """
 """.trimIndent()
 
 private val cave = mutableSetOf<Pair<Int, Int>>()
-private fun line(pairs: List<Pair<Int, Int>>) {
-    val a = pairs[0]
-    val b = pairs[1]
+private fun line(pairs: List<Pair<Int, Int>>) = pairs.take(2).let { (a, b) ->
     var curr = a
-    val dx = if (a.first < b.first) 1 else if (a.first == b.first) 0 else -1
-    val dy = if (a.second < b.second) 1 else if (a.second == b.second) 0 else -1
+    val d = (b.first - a.first).sign to (b.second - a.second).sign
     cave.add(b)
     while (curr != b) {
         cave.add(curr)
-        curr = curr.copy(curr.first + dx, curr.second + dy)
+        curr = curr.copy(curr.first + d.first, curr.second + d.second)
     }
 }
 
-private fun setLocations(input: String) {
-    input.split(Regex("->"))
-        .map { it.split(",").let { it[0].trim().toInt() to it[1].trim().toInt() } }
-        .windowed(2, 1)
-        .forEach(::line)
-}
+private fun setLocations(input: String) = input.split(Regex("->"))
+    .map { it.split(",").let { it[0].trim().toInt() to it[1].trim().toInt() } }
+    .windowed(2, 1)
+    .forEach(::line)
 
 private fun process(input: String, part2: Boolean) {
     cave.clear()
@@ -35,9 +31,12 @@ private fun process(input: String, part2: Boolean) {
     var falling = Pair(500, 0)
 
     while (part2 || falling.second < theVoid) {
-        val hasBlockBelow = cave.contains(falling.first to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
-        val hasBlockLeft = cave.contains(falling.first - 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
-        val hasBlockRight = cave.contains(falling.first + 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+        val hasBlockBelow =
+            cave.contains(falling.first to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+        val hasBlockLeft =
+            cave.contains(falling.first - 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+        val hasBlockRight =
+            cave.contains(falling.first + 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
 
         falling = if (!hasBlockBelow) {
             falling.copy(second = falling.second + 1)
