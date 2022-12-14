@@ -27,27 +27,32 @@ private fun setLocations(input: String) {
         .forEach(::line)
 }
 
-private fun process(input: String, part1: Boolean) {
+private fun process(input: String, part2: Boolean) {
     cave.clear()
     input.split("\n").forEach(::setLocations)
     val walls = cave.size
-    val theVoid = if (part1) cave.maxOf { it.second } else cave.maxOf { it.second } + 2
+    val theVoid = if (!part2) cave.maxOf { it.second } else cave.maxOf { it.second } + 2
     var falling = Pair(500, 0)
-    while (!part1 || falling.second < theVoid) {
-        val hasBelow = cave.contains(falling.first to falling.second + 1) || (!part1 && (falling.second >= theVoid - 1))
-        val hasLeft = cave.contains(falling.first - 1 to falling.second + 1) || (!part1 && (falling.second >= theVoid - 1))
-        val hasRight = cave.contains(falling.first + 1 to falling.second + 1) || (!part1 && (falling.second >= theVoid - 1))
-        falling = if (!hasBelow) {
-            falling.copy(falling.first, falling.second + 1)
-        } else if (!hasLeft) {
+
+    while (part2 || falling.second < theVoid) {
+        val hasBlockBelow = cave.contains(falling.first to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+        val hasBlockLeft = cave.contains(falling.first - 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+        val hasBlockRight = cave.contains(falling.first + 1 to falling.second + 1) || (part2 && (falling.second >= theVoid - 1))
+
+        falling = if (!hasBlockBelow) {
+            falling.copy(second = falling.second + 1)
+        } else if (!hasBlockLeft) {
             falling.copy(falling.first - 1, falling.second + 1)
-        } else if (!hasRight) {
+        } else if (!hasBlockRight) {
             falling.copy(falling.first + 1, falling.second + 1)
         } else {
+            // Can't move, so it stays here
             cave.add(falling)
-            if (!part1 && falling == Pair(500, 0)) {
+            // If we're doing part2, and it's stopped at the top then we're done
+            if (part2 && falling == Pair(500, 0)) {
                 break
             }
+            // New drip
             Pair(500, 0)
         }
     }
@@ -55,9 +60,9 @@ private fun process(input: String, part1: Boolean) {
 }
 
 fun main() {
-    process(input, true)
     process(input, false)
+    process(input, true)
     val input = object {}::class.java.getResourceAsStream("/day14.input")?.bufferedReader()!!.readText()
-    process(input, true)
     process(input, false)
+    process(input, true)
 }
