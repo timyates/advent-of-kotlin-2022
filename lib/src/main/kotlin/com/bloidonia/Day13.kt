@@ -26,7 +26,7 @@ private val input = """
     [1,[2,[3,[4,[5,6,0]]]],8,9]
 """.trimIndent()
 
-sealed class Element {
+private sealed class Element {
     data class Array(val elements: MutableList<Element>) : Element() {
         override fun toString(): String = "[${elements.joinToString(",")}]"
     }
