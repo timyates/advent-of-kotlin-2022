@@ -56,14 +56,48 @@ private fun getValue(tree: Map<String, Primate>, primate: Primate): Long = when 
         else -> throw IllegalArgumentException("Unknown primate: $primate")
     }
 
+private fun getValue2(tree: Map<String, Primate>, primate: Primate, humn: Long): Double = when {
+    primate is Primate.Number -> {
+        if (primate.name == "humn") humn.toDouble() else primate.value.toDouble()
+    }
+    primate is Primate.Operation -> {
+        val left = getValue2(tree, tree[primate.left]!!, humn)
+        val right = getValue2(tree, tree[primate.right]!!, humn)
+        if (primate.name == "root") {
+            println("${left == right} (${left - right})")
+        }
+        when (primate.op) {
+            "+" -> left + right
+            "-" -> left - right
+            "*" -> left * right
+            "/" -> left / right
+            else -> throw IllegalArgumentException("Unknown op: ${primate.op}")
+        }
+    }
+    else -> throw IllegalArgumentException("Unknown primate: $primate")
+}
+
 private fun walk(input: String) {
     parse(input).let {
         println(getValue(it, it["root"]!!))
     }
 }
+private fun walk2(input: String, humn: Long) {
+    println("humn: $humn")
+    parse(input).let {
+        getValue2(it, it["root"]!!, humn)
+    }
+}
 
 fun main() {
     walk(input)
+    walk2(input, 0)
+    walk2(input, 301)
     val input = object {}::class.java.getResourceAsStream("/day21.input")?.bufferedReader()!!.readText()
     walk(input)
+    walk2(input, 0)
+    walk2(input, 3876578844368)
+    walk2(input, 3876879264207)
+    walk2(input, 3876903491613)
+    walk2(input, 3876907167495)
 }
